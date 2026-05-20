@@ -60,9 +60,10 @@ export default function MapView() {
         // New Places UI Kit: PlaceAutocompleteElement is a Web Component.
         // Mount it inside our styled search-bar container.
         if (searchContainerRef.current && places.PlaceAutocompleteElement) {
+          // No `includedPrimaryTypes` filter — anywhere with wifi + seating
+          // can be a work spot (delis, boba, lounges, libraries, etc.).
           autocompleteEl = new places.PlaceAutocompleteElement({
             locationBias: BAY_AREA_BOUNDS,
-            includedPrimaryTypes: ["cafe", "coffee_shop", "restaurant", "bakery"],
           } as unknown as Record<string, unknown>);
           // Make it fill the container.
           autocompleteEl.style.width = "100%";
