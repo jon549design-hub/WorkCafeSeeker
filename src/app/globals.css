@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* Force light theme — dark: utilities never fire unless we explicitly opt in. */
+@variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+:root {
+  --background: #fbf6eb;        /* lighter warm cream */
+  --foreground: #1a1a1a;        /* near-black */
+  --surface: #ffffff;            /* white cards */
+  --surface-muted: #efe7d8;      /* slightly darker cream for muted areas */
+  --border: #e3dccc;             /* cream-tinted border */
+  --subtle: #6b6b6b;             /* secondary text */
+  --accent: #1a1a1a;             /* primary CTA (black) */
+  --accent-fg: #fbf6eb;          /* text on black */
+  --sage: #768a5a;               /* olive sage accent */
+  --sage-soft: #d3dcc1;          /* soft sage background */
+  --rose: #d8a294;               /* dusty rose accent */
+  --rose-soft: #f5e2dc;          /* soft rose background */
+  --amber: #c89241;              /* warm amber (regular) */
+  --amber-soft: #f3e3c8;         /* soft amber background */
+
+  /* Display / italic-serif font, paired with the sans body. */
+  --font-display: var(--font-pt-serif), Georgia, "Times New Roman", serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-rose: var(--rose);
+  --color-rose-soft: var(--rose-soft);
+  --color-amber-warm: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-pt-serif), Georgia, "Times New Roman", serif;
+  --font-script: var(--font-pt-serif), Georgia, "Times New Roman", serif;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Leaflet popup polish to match the cream theme */
+.leaflet-tooltip {
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(26, 26, 26, 0.08);
+  font-family: var(--font-sans);
+}
