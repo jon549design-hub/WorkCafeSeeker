@@ -60,9 +60,10 @@ export default function MapView() {
         // New Places UI Kit: PlaceAutocompleteElement is a Web Component.
         // Mount it inside our styled search-bar container.
         if (searchContainerRef.current && places.PlaceAutocompleteElement) {
-          // Broad set of food / cafe-like primary types. Wide enough to
-          // catch delis, sandwich shops, boba, bakeries (places like
-          // Loveski) — narrow enough to keep gas stations & auto shops out.
+          // Google Places API (New) caps included_primary_types at 5.
+          // Pick the broadest categories that catch most work spots — delis,
+          // boba shops, and similar still surface because Google often
+          // assigns them a primary type of `restaurant`.
           autocompleteEl = new places.PlaceAutocompleteElement({
             locationBias: BAY_AREA_BOUNDS,
             includedPrimaryTypes: [
@@ -70,19 +71,7 @@ export default function MapView() {
               "coffee_shop",
               "bakery",
               "restaurant",
-              "delicatessen",
-              "sandwich_shop",
-              "bubble_tea_shop",
-              "tea_house",
-              "ice_cream_shop",
-              "juice_shop",
               "meal_takeaway",
-              "breakfast_restaurant",
-              "brunch_restaurant",
-              "diner",
-              "bistro",
-              "dessert_shop",
-              "bagel_shop",
             ],
           } as unknown as Record<string, unknown>);
           // Make it fill the container.
