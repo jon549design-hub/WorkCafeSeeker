@@ -135,25 +135,26 @@ export default function VisitForm({ placeId }: Props) {
 
   return (
     <div className="flex-1 flex flex-col">
-      <header className="sticky top-0 z-10 bg-white/95 dark:bg-zinc-950/95 backdrop-blur border-b border-zinc-200 dark:border-zinc-800">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 h-14 flex items-center gap-3">
           <button
             type="button"
             onClick={() => router.back()}
-            className="text-sm text-zinc-500"
+            aria-label="Go back"
+            className="h-9 w-9 rounded-full bg-surface-muted text-foreground flex items-center justify-center text-base shrink-0"
           >
-            ← Cancel
+            ←
           </button>
           <h1 className="font-semibold">Log a visit</h1>
         </div>
       </header>
 
-      <div className="p-4 space-y-6 pb-24">
+      <div className="p-5 space-y-6 pb-24">
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 mb-2">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle mb-2">
             Quick check
           </h2>
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-3 divide-y divide-zinc-100 dark:divide-zinc-800">
+          <div className="rounded-2xl bg-surface border border-border p-3 divide-y divide-border">
             {BOOL_SIGNALS.map((s) => (
               <YesNoPicker
                 key={s}
@@ -174,21 +175,21 @@ export default function VisitForm({ placeId }: Props) {
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 mb-2">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle mb-2">
             Tags
           </h2>
           <TagChips available={availableTags} selected={tags} onChange={setTags} />
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 mb-2">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle mb-2">
             Photos
           </h2>
           <PhotoUploader files={photos} onChange={setPhotos} />
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 mb-2">
+          <h2 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle mb-2">
             Notes
           </h2>
           <textarea
@@ -196,17 +197,17 @@ export default function VisitForm({ placeId }: Props) {
             onChange={(e) => setNote(e.target.value)}
             rows={4}
             placeholder="sat by the window, wifi solid, barista was chill…"
-            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full rounded-2xl border border-border bg-surface p-3 outline-none focus:ring-2 focus:ring-foreground/15"
           />
         </section>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-rose">{error}</p>}
 
         <button
           type="button"
           onClick={save}
           disabled={saving}
-          className="w-full h-12 rounded-full bg-emerald-600 text-white font-medium disabled:opacity-60"
+          className="w-full h-12 rounded-full bg-accent text-accent-fg font-medium disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save visit"}
         </button>

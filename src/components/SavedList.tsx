@@ -94,49 +94,64 @@ export default function SavedList() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <header className="sticky top-0 z-10 bg-white/95 dark:bg-zinc-950/95 backdrop-blur border-b border-zinc-200 dark:border-zinc-800">
-        <div className="px-4 h-14 flex items-center">
-          <h1 className="font-semibold">Saved cafes</h1>
+      <header className="px-5 pt-6 pb-3">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-subtle">
+          My list
+        </p>
+        <h1 className="font-script italic text-5xl leading-tight mt-1">
+          Saved places
+        </h1>
+        <div className="mt-4">
+          <FilterChips value={filters} onChange={setFilters} />
         </div>
-        <FilterChips value={filters} onChange={setFilters} className="px-4 pb-3" />
       </header>
 
-      {loading ? (
-        <div className="p-6 text-sm text-zinc-500">Loading…</div>
-      ) : filtered.length === 0 ? (
-        <div className="p-6 text-sm text-zinc-500">
-          No saved cafes yet. Find one on the map and log your first visit.
-        </div>
-      ) : (
-        <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {filtered.map((r) => (
-            <li key={r.cafe_id}>
-              <Link
-                href={`/cafe/${r.google_place_id}`}
-                className="flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-900"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{r.name}</div>
-                  {r.address && (
-                    <div className="text-xs text-zinc-500 truncate">{r.address}</div>
-                  )}
-                  <div className="text-xs text-zinc-500 mt-1">
-                    {r.visits} visit{r.visits === 1 ? "" : "s"} · last{" "}
-                    {new Date(r.last_visited_at).toLocaleDateString()}
+      <div className="px-5 pb-28">
+        {loading ? (
+          <div className="text-sm text-subtle">Loading…</div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-border bg-surface/60 p-5 text-sm text-subtle space-y-2">
+            <p>No saved places match your filters.</p>
+            <p>
+              Open the <strong>Map</strong> tab, search for a spot, and tap{" "}
+              <strong>Log a visit</strong>.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {filtered.map((r) => (
+              <li key={r.cafe_id}>
+                <Link
+                  href={`/cafe/${r.google_place_id}`}
+                  className="block rounded-3xl bg-surface border border-border p-4 shadow-[0_4px_16px_rgba(26,26,26,0.04)] hover:shadow-[0_8px_24px_rgba(26,26,26,0.08)] transition"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold truncate">{r.name}</div>
+                      {r.address && (
+                        <div className="text-xs text-subtle truncate mt-0.5">
+                          {r.address}
+                        </div>
+                      )}
+                      <div className="text-xs text-subtle mt-1">
+                        {r.visits} visit{r.visits === 1 ? "" : "s"} · last{" "}
+                        {new Date(r.last_visited_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="text-right text-xs space-y-0.5 shrink-0">
+                      <BoolRow label="Wifi" value={r.has_wifi} />
+                      <BoolRow label="Outlets" value={r.has_outlets} />
+                      <div className="text-subtle">
+                        Seating {r.avg_seating ?? "—"}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right text-xs space-y-0.5 shrink-0">
-                  <BoolRow label="Wifi" value={r.has_wifi} />
-                  <BoolRow label="Outlets" value={r.has_outlets} />
-                  <div className="text-zinc-500">
-                    Seating {r.avg_seating ?? "—"}
-                  </div>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
@@ -144,14 +159,14 @@ export default function SavedList() {
 function BoolRow({ label, value }: { label: string; value: boolean | null }) {
   const text =
     value === true ? (
-      <span className="text-emerald-600 font-medium">Yes</span>
+      <span className="text-sage font-semibold">Yes</span>
     ) : value === false ? (
-      <span className="text-zinc-500">No</span>
+      <span className="text-subtle">No</span>
     ) : (
-      <span className="text-zinc-500">—</span>
+      <span className="text-subtle">—</span>
     );
   return (
-    <div className="text-zinc-500">
+    <div className="text-subtle">
       {label} {text}
     </div>
   );
