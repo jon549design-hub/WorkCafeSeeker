@@ -91,25 +91,10 @@ export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> 
   };
 }
 
-// Valid Google Places API (New) Table A primary types for "work spots".
-// Nearby Search isn't capped at 5 like Autocomplete is.
-const WORK_SPOT_TYPES = [
-  "cafe",
-  "coffee_shop",
-  "bakery",
-  "restaurant",
-  "meal_takeaway",
-  "tea_house",
-  "ice_cream_shop",
-  "juice_shop",
-  "sandwich_shop",
-  "breakfast_restaurant",
-  "brunch_restaurant",
-  "diner",
-  "bistro",
-  "dessert_shop",
-  "donut_shop",
-];
+// Narrow set of canonical work-friendly types for *recommendations*.
+// Full restaurants/fast-food are excluded — too noisy. Users can still
+// search for those by name via the autocomplete in MapView.
+const WORK_SPOT_TYPES = ["cafe", "coffee_shop", "bakery", "tea_house"];
 
 /**
  * Google Places Nearby Search — work-spot types near a point.
