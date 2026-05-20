@@ -129,11 +129,10 @@ export default function MapView() {
   return (
     <div className="relative flex-1 flex flex-col">
       <div className="absolute top-3 inset-x-3 z-10">
-        <div
-          ref={searchContainerRef}
-          className="rounded-full bg-background/95 border border-border shadow-[0_4px_16px_rgba(26,26,26,0.06)] overflow-hidden"
-          style={{ minHeight: 44 }}
-        />
+        {/* PlaceAutocompleteElement renders its own styled input + dropdown.
+            We give it a plain block container — no overflow-hidden, no
+            competing border/background — so the dropdown can extend below. */}
+        <div ref={searchContainerRef} className="w-full" />
       </div>
       <div ref={mapEl} className="flex-1" />
       {status && (
