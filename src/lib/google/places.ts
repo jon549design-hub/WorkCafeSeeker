@@ -13,6 +13,7 @@ export type PlaceDetails = {
   isOpen: boolean | null;
   weekdayText: string[];
   photos: string[];
+  primaryTypeLabel: string | null;
 };
 
 export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> {
@@ -28,6 +29,7 @@ export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> 
       "userRatingCount",
       "regularOpeningHours",
       "photos",
+      "primaryTypeDisplayName",
     ],
   });
 
@@ -51,6 +53,17 @@ export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> 
     }
   }
 
+  // primaryTypeDisplayName is a localized human label like "Cafe",
+  // "Delicatessen", "Bakery". Display it to help the user understand
+  // what kind of place it is at a glance.
+  const placeWithType = place as unknown as {
+    primaryTypeDisplayName?: { text?: string } | string | null;
+  };
+  let primaryTypeLabel: string | null = null;
+  const raw = placeWithType.primaryTypeDisplayName;
+  if (typeof raw === "string") primaryTypeLabel = raw;
+  else if (raw && typeof raw === "object" && raw.text) primaryTypeLabel = raw.text;
+
   return {
     id: placeId,
     name: place.displayName ?? "Unknown",
@@ -62,5 +75,6 @@ export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> 
     isOpen,
     weekdayText: place.regularOpeningHours?.weekdayDescriptions ?? [],
     photos,
+    primaryTypeLabel,
   };
 }

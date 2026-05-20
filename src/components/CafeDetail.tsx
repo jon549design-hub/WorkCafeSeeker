@@ -124,6 +124,11 @@ export default function CafeDetail({ placeId }: Props) {
 
       <div className="p-4 space-y-6 pb-24">
         <div>
+          {place.primaryTypeLabel && (
+            <div className="mb-1 inline-flex text-[11px] uppercase tracking-[0.15em] text-subtle">
+              {place.primaryTypeLabel}
+            </div>
+          )}
           <div className="text-sm text-zinc-500">{place.address}</div>
           <div className="mt-1 text-sm">
             {place.isOpen === true && <span className="text-emerald-600 font-medium">Open now</span>}
