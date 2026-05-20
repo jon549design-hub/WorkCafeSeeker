@@ -35,7 +35,8 @@
       "Bash(git commit -m 'Migrate map search to new PlaceAutocompleteElement *)",
       "Bash(git commit -m 'Don'\\\\''t clip the autocomplete dropdown *)",
       "Bash(git commit -m 'Don'\\\\''t filter autocomplete by primary type *)",
-      "Bash(git commit -m 'Show place category on cafe detail + broader autocomplete filter *)"
+      "Bash(git commit -m 'Show place category on cafe detail + broader autocomplete filter *)",
+      "Bash(git commit -m 'Polish CafeDetail: hero image, italic serif title, cream theme *)"
     ]
   }
 }
