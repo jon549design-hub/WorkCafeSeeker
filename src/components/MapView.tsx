@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BAY_AREA_BOUNDS, DEFAULT_CENTER, configureMaps, importLibrary } from "@/lib/google/loader";
+import {
+  BAY_AREA_BOUNDS,
+  DEFAULT_CENTER,
+  configureMaps,
+  importLibrary,
+} from "@/lib/google/loader";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { ensureSession } from "@/lib/supabase/session";
 
@@ -16,20 +21,23 @@ type MyCafePin = {
 export default function MapView() {
   const router = useRouter();
   const mapEl = useRef<HTMLDivElement | null>(null);
-  const searchEl = useRef<HTMLInputElement | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [status, setStatus] = useState<string>("Loading map…");
 
   useEffect(() => {
     let cancelled = false;
+    let autocompleteEl: HTMLElement | null = null;
 
     async function init() {
       try {
         await ensureSession();
         configureMaps();
         const { Map } = await importLibrary("maps");
-        const { Autocomplete } = await importLibrary("places");
+        const places = (await importLibrary("places")) as unknown as {
+          PlaceAutocompleteElement: new (opts?: unknown) => HTMLElement;
+        };
         await importLibrary("marker");
         if (cancelled || !mapEl.current) return;
 
@@ -49,19 +57,33 @@ export default function MapView() {
         mapRef.current = map;
         setStatus("");
 
-        if (searchEl.current) {
-          const ac = new Autocomplete(searchEl.current, {
-            bounds: BAY_AREA_BOUNDS,
-            fields: ["place_id", "geometry", "name"],
-            types: ["cafe", "restaurant"],
-          });
-          ac.bindTo("bounds", map);
-          ac.addListener("place_changed", () => {
-            const place = ac.getPlace();
-            if (place.place_id) router.push(`/cafe/${place.place_id}`);
+        // New Places UI Kit: PlaceAutocompleteElement is a Web Component.
+        // Mount it inside our styled search-bar container.
+        if (searchContainerRef.current && places.PlaceAutocompleteElement) {
+          autocompleteEl = new places.PlaceAutocompleteElement({
+            locationBias: BAY_AREA_BOUNDS,
+            includedPrimaryTypes: ["cafe", "coffee_shop", "restaurant", "bakery"],
+          } as unknown as Record<string, unknown>);
+          // Make it fill the container.
+          autocompleteEl.style.width = "100%";
+          searchContainerRef.current.innerHTML = "";
+          searchContainerRef.current.appendChild(autocompleteEl);
+
+          autocompleteEl.addEventListener("gmp-select", async (evt: Event) => {
+            // The select event carries a placePrediction with .toPlace()
+            const ev = evt as unknown as {
+              placePrediction?: {
+                toPlace: () => google.maps.places.Place;
+              };
+            };
+            const place = ev.placePrediction?.toPlace();
+            if (!place) return;
+            await place.fetchFields({ fields: ["id"] });
+            if (place.id) router.push(`/cafe/${place.id}`);
           });
         }
 
+        // Load the user's visited cafes from Supabase and pin them.
         const supabase = createSupabaseBrowserClient();
         const { data, error } = await supabase
           .from("visits")
@@ -99,6 +121,7 @@ export default function MapView() {
     init();
     return () => {
       cancelled = true;
+      autocompleteEl?.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -106,17 +129,18 @@ export default function MapView() {
   return (
     <div className="relative flex-1 flex flex-col">
       <div className="absolute top-3 inset-x-3 z-10">
-        <input
-          ref={searchEl}
-          type="search"
-          placeholder="Search a cafe…"
-          className="w-full h-11 px-4 rounded-full bg-white/95 dark:bg-zinc-900/95 shadow-lg border border-zinc-200 dark:border-zinc-800 outline-none focus:ring-2 focus:ring-emerald-500"
+        <div
+          ref={searchContainerRef}
+          className="rounded-full bg-background/95 border border-border shadow-[0_4px_16px_rgba(26,26,26,0.06)] overflow-hidden"
+          style={{ minHeight: 44 }}
         />
       </div>
       <div ref={mapEl} className="flex-1" />
       {status && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="px-4 py-2 rounded-md bg-black/60 text-white text-sm">{status}</div>
+          <div className="px-4 py-2 rounded-md bg-black/60 text-white text-sm">
+            {status}
+          </div>
         </div>
       )}
     </div>

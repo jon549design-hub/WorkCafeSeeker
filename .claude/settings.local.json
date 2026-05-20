@@ -31,7 +31,8 @@
       "Bash(git ls-tree *)",
       "Bash(~/.local/bin/gh api *)",
       "Bash(git commit -m 'Accept new Supabase publishable_key env name *)",
-      "Bash(git commit -m 'Add RealDashboard so the home tab isn'\\\\''t the map *)"
+      "Bash(git commit -m 'Add RealDashboard so the home tab isn'\\\\''t the map *)",
+      "Bash(git commit -m 'Migrate map search to new PlaceAutocompleteElement *)"
     ]
   }
 }
