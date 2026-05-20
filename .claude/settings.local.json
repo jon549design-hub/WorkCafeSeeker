@@ -18,7 +18,20 @@
       "Bash(gh auth *)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(brew --version)",
+      "Bash(git config *)",
+      "Bash(security list-keychains *)",
+      "Bash(~/.local/bin/gh repo *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(~/.local/bin/gh auth *)",
+      "Bash(git fetch *)",
+      "Bash(git ls-tree *)",
+      "Bash(~/.local/bin/gh api *)",
+      "Bash(git commit -m 'Accept new Supabase publishable_key env name *)",
+      "Bash(git commit -m 'Add RealDashboard so the home tab isn'\\\\''t the map *)"
     ]
   }
 }
