@@ -12,6 +12,7 @@ import {
 } from "@/lib/location";
 import { getRegular, subscribeRegular } from "@/lib/preferences";
 import { fetchNearbyPlaces, type NearbyPlace } from "@/lib/google/places";
+import CafeInfoSheet from "./CafeInfoSheet";
 
 type CafeRow = {
   id: string;
@@ -35,6 +36,7 @@ export default function RealDashboard() {
   const [nearby, setNearby] = useState<NearbyPlace[]>([]);
   const [loadingVisits, setLoadingVisits] = useState(true);
   const [loadingNearby, setLoadingNearby] = useState(true);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -168,7 +170,12 @@ export default function RealDashboard() {
             Your regular
           </h2>
           {regularCafe ? (
-            <CafeRowCard cafe={regularCafe} userLoc={userLoc} isRegular />
+            <CafeRowCard
+              cafe={regularCafe}
+              userLoc={userLoc}
+              isRegular
+              onSelect={setSelectedPlaceId}
+            />
           ) : (
             <div className="rounded-3xl border border-dashed border-border bg-surface/60 p-4 text-sm text-subtle">
               No regular yet. Open a cafe and tap the ★ on the detail page to mark one.
@@ -187,7 +194,11 @@ export default function RealDashboard() {
                 Bored of your regular?
               </span>
             </div>
-            <NearbyHeroCard place={newToTry} userLoc={userLoc} />
+            <NearbyHeroCard
+              place={newToTry}
+              userLoc={userLoc}
+              onSelect={setSelectedPlaceId}
+            />
           </section>
         )}
 
@@ -202,7 +213,12 @@ export default function RealDashboard() {
                 .filter((c) => c.google_place_id !== regularId)
                 .slice(0, 5)
                 .map((c) => (
-                  <CafeRowCard key={c.id} cafe={c} userLoc={userLoc} />
+                  <CafeRowCard
+                    key={c.id}
+                    cafe={c}
+                    userLoc={userLoc}
+                    onSelect={setSelectedPlaceId}
+                  />
                 ))}
             </div>
           </section>
@@ -221,7 +237,12 @@ export default function RealDashboard() {
                     key={p.id}
                     className="snap-start shrink-0 w-[70%]"
                   >
-                    <NearbyTile place={p} userLoc={userLoc} isVisited={visitedIds.has(p.id)} />
+                    <NearbyTile
+                      place={p}
+                      userLoc={userLoc}
+                      isVisited={visitedIds.has(p.id)}
+                      onSelect={setSelectedPlaceId}
+                    />
                   </div>
                 ))}
                 <div className="shrink-0 w-1" />
@@ -249,6 +270,11 @@ export default function RealDashboard() {
           Explore the map
         </Link>
       </div>
+      <CafeInfoSheet
+        placeId={selectedPlaceId}
+        onClose={() => setSelectedPlaceId(null)}
+        userLoc={userLoc}
+      />
     </div>
   );
 }
@@ -257,18 +283,21 @@ function CafeRowCard({
   cafe,
   userLoc,
   isRegular,
+  onSelect,
 }: {
   cafe: CafeRow;
   userLoc: LatLng | null;
   isRegular?: boolean;
+  onSelect: (placeId: string) => void;
 }) {
   const dist = userLoc
     ? formatMiles(haversineKm(userLoc, { lat: cafe.lat, lng: cafe.lng }))
     : null;
   return (
-    <Link
-      href={`/cafe/${cafe.google_place_id}`}
-      className="block rounded-3xl bg-surface border border-border p-4 shadow-[0_4px_16px_rgba(26,26,26,0.04)] hover:shadow-[0_8px_24px_rgba(26,26,26,0.08)] transition"
+    <button
+      type="button"
+      onClick={() => onSelect(cafe.google_place_id)}
+      className="w-full text-left block rounded-3xl bg-surface border border-border p-4 shadow-[0_4px_16px_rgba(26,26,26,0.04)] hover:shadow-[0_8px_24px_rgba(26,26,26,0.08)] transition"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -289,24 +318,27 @@ function CafeRowCard({
         </div>
         <span className="text-subtle text-lg shrink-0 -mr-1">›</span>
       </div>
-    </Link>
+    </button>
   );
 }
 
 function NearbyHeroCard({
   place,
   userLoc,
+  onSelect,
 }: {
   place: NearbyPlace;
   userLoc: LatLng | null;
+  onSelect: (placeId: string) => void;
 }) {
   const dist = userLoc
     ? formatMiles(haversineKm(userLoc, { lat: place.lat, lng: place.lng }))
     : null;
   return (
-    <Link
-      href={`/cafe/${place.id}`}
-      className="block rounded-3xl overflow-hidden bg-surface border border-border shadow-[0_4px_16px_rgba(26,26,26,0.04)] hover:shadow-[0_8px_24px_rgba(26,26,26,0.08)] transition"
+    <button
+      type="button"
+      onClick={() => onSelect(place.id)}
+      className="w-full text-left block rounded-3xl overflow-hidden bg-surface border border-border shadow-[0_4px_16px_rgba(26,26,26,0.04)] hover:shadow-[0_8px_24px_rgba(26,26,26,0.08)] transition"
     >
       {place.photo && (
         <div className="relative aspect-[4/3] bg-surface-muted overflow-hidden">
@@ -339,7 +371,7 @@ function NearbyHeroCard({
           {dist ? `${dist} · ` : ""}★ {place.rating?.toFixed(1) ?? "—"}
         </p>
       </div>
-    </Link>
+    </button>
   );
 }
 
@@ -347,18 +379,21 @@ function NearbyTile({
   place,
   userLoc,
   isVisited,
+  onSelect,
 }: {
   place: NearbyPlace;
   userLoc: LatLng | null;
   isVisited?: boolean;
+  onSelect: (placeId: string) => void;
 }) {
   const dist = userLoc
     ? formatMiles(haversineKm(userLoc, { lat: place.lat, lng: place.lng }))
     : null;
   return (
-    <Link
-      href={`/cafe/${place.id}`}
-      className="block rounded-3xl overflow-hidden bg-surface border border-border shadow-[0_4px_16px_rgba(26,26,26,0.04)] hover:shadow-[0_8px_24px_rgba(26,26,26,0.08)] transition"
+    <button
+      type="button"
+      onClick={() => onSelect(place.id)}
+      className="w-full text-left block rounded-3xl overflow-hidden bg-surface border border-border shadow-[0_4px_16px_rgba(26,26,26,0.04)] hover:shadow-[0_8px_24px_rgba(26,26,26,0.08)] transition"
     >
       <div className="relative aspect-[5/4] bg-surface-muted overflow-hidden">
         {place.photo ? (
@@ -395,7 +430,7 @@ function NearbyTile({
           {dist ?? ""}
         </p>
       </div>
-    </Link>
+    </button>
   );
 }
 

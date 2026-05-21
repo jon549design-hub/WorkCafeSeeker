@@ -22,6 +22,7 @@ import { getRegular, subscribeRegular } from "@/lib/preferences";
 import { findStyle, getMapStyleId, setMapStyleId, type MapStyleId } from "@/lib/mapStyles";
 import FilterChips, { DEFAULT_FILTERS, type SignalFilters } from "./FilterChips";
 import MapStylePicker from "./MapStylePicker";
+import CafeInfoSheet from "./CafeInfoSheet";
 
 const SF_CENTER: [number, number] = [37.7749, -122.4194];
 
@@ -49,6 +50,7 @@ export default function MapView() {
   const [userLoc, setUserLoc] = useState<LatLng | null>(null);
   const [regularId, setRegularId] = useState<string | null>(null);
   const [pins, setPins] = useState<CafePin[]>([]);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   // -------- Data loading --------
   useEffect(() => {
@@ -277,7 +279,7 @@ export default function MapView() {
           `<strong>${c.name}</strong>${distStr ? `<br/><span style="color:#6b6b6b">${distStr}</span>` : ""}`,
           { direction: "top", offset: [0, -8] },
         );
-        marker.on("click", () => router.push(`/cafe/${c.google_place_id}`));
+        marker.on("click", () => setSelectedPlaceId(c.google_place_id));
         marker.addTo(layer);
       }
     })();
@@ -358,7 +360,7 @@ export default function MapView() {
           const place = ev.placePrediction?.toPlace();
           if (!place) return;
           await place.fetchFields({ fields: ["id"] });
-          if (place.id) router.push(`/cafe/${place.id}`);
+          if (place.id) setSelectedPlaceId(place.id);
         });
       } catch (err) {
         console.warn("Could not load Google Places autocomplete:", err);
@@ -397,6 +399,11 @@ export default function MapView() {
           </p>
         </div>
       </div>
+      <CafeInfoSheet
+        placeId={selectedPlaceId}
+        onClose={() => setSelectedPlaceId(null)}
+        userLoc={userLoc}
+      />
     </div>
   );
 }
