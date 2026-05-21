@@ -43,7 +43,8 @@
       "Bash(git commit -m 'Real-mode polish: VisitForm + SavedList + Me page *)",
       "Bash(git commit -m 'Color refresh + Leaflet map in real mode + photo filter *)",
       "Bash(git commit -m 'Fix regular persistence + cream-themed search + map pin coverage *)",
-      "Bash(git commit -m 'Show Google Places nearby spots as green pins on the map *)"
+      "Bash(git commit -m 'Show Google Places nearby spots as green pins on the map *)",
+      "Bash(git commit -m 'Persistent map: stop destroying it on every state change *)"
     ]
   }
 }

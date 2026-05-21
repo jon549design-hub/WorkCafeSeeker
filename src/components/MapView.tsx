@@ -32,8 +32,6 @@ type CafePin = {
   lng: number;
   has_wifi: boolean | null;
   has_outlets: boolean | null;
-  // true if this pin came from Google Places nearby search rather than
-  // the user's own visits. Renders as a "new" (green) marker.
   isNew?: boolean;
   isOpen?: boolean | null;
 };
@@ -43,6 +41,7 @@ export default function MapView() {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
+  const markerLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const tileLayerRef = useRef<import("leaflet").TileLayer | null>(null);
 
   const [filters, setFilters] = useState<SignalFilters>(DEFAULT_FILTERS);
@@ -51,6 +50,7 @@ export default function MapView() {
   const [regularId, setRegularId] = useState<string | null>(null);
   const [pins, setPins] = useState<CafePin[]>([]);
 
+  // -------- Data loading --------
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -67,7 +67,6 @@ export default function MapView() {
       if (cancelled) return;
       if (error) {
         console.warn("Could not load visited cafes:", error.message);
-        return;
       }
       const byPlaceId = new Map<string, CafePin>();
       for (const v of (data ?? []) as unknown as {
@@ -94,14 +93,13 @@ export default function MapView() {
         }
       }
 
-      // Also pull the user's regular cafe (even without a logged visit).
       if (currentRegular && !byPlaceId.has(currentRegular)) {
         const { data: regularRow } = await supabase
           .from("cafes")
           .select("google_place_id, name, lat, lng")
           .eq("google_place_id", currentRegular)
           .maybeSingle();
-        if (regularRow) {
+        if (!cancelled && regularRow) {
           byPlaceId.set(regularRow.google_place_id as string, {
             google_place_id: regularRow.google_place_id as string,
             name: regularRow.name as string,
@@ -113,7 +111,7 @@ export default function MapView() {
         }
       }
 
-      setPins([...byPlaceId.values()]);
+      if (!cancelled) setPins([...byPlaceId.values()]);
     })();
 
     setStyleIdState(getMapStyleId());
@@ -121,9 +119,6 @@ export default function MapView() {
     getCurrentLocation().then(async (loc) => {
       if (cancelled) return;
       setUserLoc(loc);
-      // Pull nearby work-spot places from Google and render them as
-      // "new" (green) pins so the map isn't empty when the user has
-      // few/no visits.
       try {
         const nearby = await fetchNearbyPlaces(loc, 1500, 12);
         if (cancelled) return;
@@ -163,29 +158,21 @@ export default function MapView() {
 
   const filteredPins = useMemo(() => {
     return pins.filter((p) => {
-      // Wifi / outlets filters only apply to confirmed-good visited
-      // cafes. New pins (no user data) are excluded when filtering.
       if (filters.has_wifi && p.has_wifi !== true) return false;
       if (filters.has_outlets && p.has_outlets !== true) return false;
-      // "Open now" only applies to new pins (we have Google's isOpen
-      // for them). Visited cafes don't store hours, so they're always
-      // shown — better than hiding history.
       if (filters.open_now && p.isNew && p.isOpen === false) return false;
       return true;
     });
   }, [pins, filters]);
 
-  // Mount the Leaflet map + draw markers.
+  // -------- Map lifecycle (create once, never destroy on data changes) --------
   useEffect(() => {
     let cancelled = false;
-    let map: import("leaflet").Map | null = null;
-    let markerLayer: import("leaflet").LayerGroup | null = null;
-
     (async () => {
       const L = (await import("leaflet")).default;
-      if (cancelled || !mapEl.current) return;
+      if (cancelled || !mapEl.current || mapRef.current) return;
 
-      map = L.map(mapEl.current, {
+      const map = L.map(mapEl.current, {
         center: SF_CENTER,
         zoom: 13,
         zoomControl: false,
@@ -193,24 +180,42 @@ export default function MapView() {
       });
       mapRef.current = map;
 
-      const style = findStyle(styleId);
+      const style = findStyle(getMapStyleId());
       const tile = L.tileLayer(style.url, {
         attribution: style.attribution,
         maxZoom: style.maxZoom,
       }).addTo(map);
       tileLayerRef.current = tile;
 
-      requestAnimationFrame(() => map?.invalidateSize());
+      markerLayerRef.current = L.layerGroup().addTo(map);
 
-      markerLayer = L.layerGroup().addTo(map);
-      drawMarkers(L, markerLayer, filteredPins);
+      requestAnimationFrame(() => map.invalidateSize());
     })();
 
-    function drawMarkers(
-      L: typeof import("leaflet"),
-      layer: import("leaflet").LayerGroup,
-      cafes: CafePin[],
-    ) {
+    return () => {
+      cancelled = true;
+      mapRef.current?.remove();
+      mapRef.current = null;
+      tileLayerRef.current = null;
+      markerLayerRef.current = null;
+    };
+  }, []);
+
+  // -------- Draw markers when pins / userLoc / regularId change --------
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const L = (await import("leaflet")).default;
+      if (cancelled) return;
+      // Wait for map to exist (it's created in the lifecycle effect above).
+      let tries = 0;
+      while (!markerLayerRef.current && tries < 50) {
+        await new Promise((r) => setTimeout(r, 50));
+        tries++;
+      }
+      const layer = markerLayerRef.current;
+      if (cancelled || !layer) return;
+
       layer.clearLayers();
 
       if (userLoc) {
@@ -233,10 +238,9 @@ export default function MapView() {
           .addTo(layer);
       }
 
-      for (const c of cafes) {
+      for (const c of filteredPins) {
         const isRegular = regularId === c.google_place_id;
         const isNew = !isRegular && c.isNew === true;
-        // Regular = blue, New = green, Visited = beige.
         const color = isRegular
           ? "#5b85b8"
           : isNew
@@ -276,18 +280,15 @@ export default function MapView() {
         marker.on("click", () => router.push(`/cafe/${c.google_place_id}`));
         marker.addTo(layer);
       }
-    }
+    })();
 
     return () => {
       cancelled = true;
-      map?.remove();
-      mapRef.current = null;
-      tileLayerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredPins, userLoc, regularId]);
 
-  // Swap tile layer when style cycles.
+  // -------- Swap tile layer when style cycles --------
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -310,7 +311,7 @@ export default function MapView() {
     };
   }, [styleId]);
 
-  // Mount Google PlaceAutocompleteElement for search.
+  // -------- Google PlaceAutocompleteElement (once) --------
   useEffect(() => {
     let cancelled = false;
     let autocompleteEl: HTMLElement | null = null;
@@ -334,9 +335,6 @@ export default function MapView() {
             "meal_takeaway",
           ],
         } as unknown as Record<string, unknown>);
-        // Style the Google element to match the cream / pill aesthetic.
-        // PlaceAutocompleteElement exposes a handful of CSS custom props
-        // that pass through its shadow DOM.
         autocompleteEl.style.cssText = `
           width: 100%;
           color-scheme: light;
