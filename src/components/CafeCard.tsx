@@ -37,15 +37,15 @@ export default function CafeCard({
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold truncate">{cafe.name}</span>
             {isRegular ? (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-soft text-amber-warm font-semibold shrink-0">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-regular-soft text-regular font-semibold shrink-0">
                 ★ Regular
               </span>
             ) : isVisited ? (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-sage-soft text-sage font-semibold shrink-0">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-visited-soft text-visited font-semibold shrink-0">
                 Visited
               </span>
             ) : (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-soft text-rose font-semibold shrink-0">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-new-soft text-new font-semibold shrink-0">
                 New
               </span>
             )}

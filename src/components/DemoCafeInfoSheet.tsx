@@ -146,7 +146,7 @@ export default function DemoCafeInfoSheet({ placeId, onClose, userLoc }: Props) 
                 {isRegular && (
                   <span
                     title="Your regular"
-                    className="inline-flex mt-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-soft text-amber-warm font-semibold"
+                    className="inline-flex mt-1 text-[10px] px-2 py-0.5 rounded-full bg-regular-soft text-regular font-semibold"
                   >
                     ★ Regular
                   </span>
@@ -182,7 +182,7 @@ export default function DemoCafeInfoSheet({ placeId, onClose, userLoc }: Props) 
                   aria-pressed={isRegular}
                   className={`h-9 w-9 rounded-full text-base flex items-center justify-center transition ${
                     isRegular
-                      ? "bg-amber-warm text-white"
+                      ? "bg-regular text-white"
                       : "bg-surface-muted text-subtle"
                   }`}
                 >

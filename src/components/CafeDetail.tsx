@@ -153,7 +153,7 @@ export default function CafeDetail({ placeId }: Props) {
             aria-pressed={isRegular}
             className={`absolute top-4 right-4 h-10 w-10 rounded-full backdrop-blur flex items-center justify-center text-base shadow-md ${
               isRegular
-                ? "bg-amber-warm text-white"
+                ? "bg-regular text-white"
                 : "bg-background/95 text-foreground"
             }`}
           >
@@ -178,7 +178,7 @@ export default function CafeDetail({ placeId }: Props) {
               aria-pressed={isRegular}
               className={`h-9 w-9 rounded-full text-base flex items-center justify-center shrink-0 ${
                 isRegular
-                  ? "bg-amber-warm text-white"
+                  ? "bg-regular text-white"
                   : "bg-surface-muted text-subtle"
               }`}
             >
@@ -219,7 +219,7 @@ export default function CafeDetail({ placeId }: Props) {
             {isRegular && (
               <>
                 <span className="text-subtle">·</span>
-                <span className="inline-flex text-[10px] px-2 py-0.5 rounded-full bg-amber-soft text-amber-warm font-semibold">
+                <span className="inline-flex text-[10px] px-2 py-0.5 rounded-full bg-regular-soft text-regular font-semibold">
                   ★ Regular
                 </span>
               </>

@@ -144,7 +144,8 @@ export default function DemoMapView() {
       for (const c of cafes) {
         const isVisited = visited.has(c.google_place_id);
         const isRegular = regularId === c.google_place_id;
-        const color = isRegular ? "#c89241" : isVisited ? "#768a5a" : "#d8a294";
+        // Regular = blue, Visited = beige, New = green
+        const color = isRegular ? "#5b85b8" : isVisited ? "#b89866" : "#6e9d72";
         const size = isRegular ? 22 : 18;
         const inner = isRegular
           ? `<div style="
@@ -245,9 +246,9 @@ export default function DemoMapView() {
 
         {/* Vertical legend (bottom-left). Tiny tile attribution lives here too. */}
         <div className="absolute bottom-3 left-3 z-[500] text-[11px] bg-background/95 border border-border px-3 py-2 rounded-2xl shadow-sm flex flex-col gap-1.5">
-          <LegendDot color="#c89241" label="Regular" />
-          <LegendDot color="#768a5a" label="Visited" />
-          <LegendDot color="#d8a294" label="New" />
+          <LegendDot color="#5b85b8" label="Regular" />
+          <LegendDot color="#b89866" label="Visited" />
+          <LegendDot color="#6e9d72" label="New" />
           <p className="text-[9px] text-subtle border-t border-border pt-1 mt-1">
             Map © OSM, {styleLabel === "Streets" ? "OpenStreetMap" : "CARTO"}
           </p>

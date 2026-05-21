@@ -74,7 +74,7 @@ export default function RegularExpandCard({
       {expanded && (
         <div className="border-t border-border px-4 pt-3 pb-4 space-y-4">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-soft text-amber-warm font-semibold">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-regular-soft text-regular font-semibold">
               ★ Regular
             </span>
             {cafe.open_now ? (

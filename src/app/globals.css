@@ -12,12 +12,18 @@
   --subtle: #6b6b6b;             /* secondary text */
   --accent: #1a1a1a;             /* primary CTA (black) */
   --accent-fg: #fbf6eb;          /* text on black */
-  --sage: #768a5a;               /* olive sage accent */
+  --sage: #768a5a;               /* olive sage — used for "Yes" pills */
   --sage-soft: #d3dcc1;          /* soft sage background */
-  --rose: #d8a294;               /* dusty rose accent */
+  --rose: #d8a294;               /* dusty rose — used for "No" pills + Closed */
   --rose-soft: #f5e2dc;          /* soft rose background */
-  --amber: #c89241;              /* warm amber (regular) */
-  --amber-soft: #f3e3c8;         /* soft amber background */
+
+  /* Regular / Visited / New — used for map pins + status badges */
+  --regular: #5b85b8;            /* clear blue */
+  --regular-soft: #dde7f0;       /* soft blue */
+  --visited: #b89866;            /* warm beige */
+  --visited-soft: #ece2cc;       /* soft beige */
+  --new-color: #6e9d72;          /* soft green */
+  --new-soft: #dbe7d4;            /* soft green background */
 
   /* Display / italic-serif font, paired with the sans body. */
   --font-display: var(--font-pt-serif), Georgia, "Times New Roman", serif;
@@ -36,8 +42,12 @@
   --color-sage-soft: var(--sage-soft);
   --color-rose: var(--rose);
   --color-rose-soft: var(--rose-soft);
-  --color-amber-warm: var(--amber);
-  --color-amber-soft: var(--amber-soft);
+  --color-regular: var(--regular);
+  --color-regular-soft: var(--regular-soft);
+  --color-visited: var(--visited);
+  --color-visited-soft: var(--visited-soft);
+  --color-new: var(--new-color);
+  --color-new-soft: var(--new-soft);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-pt-serif), Georgia, "Times New Roman", serif;
   --font-script: var(--font-pt-serif), Georgia, "Times New Roman", serif;

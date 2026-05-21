@@ -91,10 +91,17 @@ export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> 
   };
 }
 
-// Narrow set of canonical work-friendly types for *recommendations*.
-// Full restaurants/fast-food are excluded — too noisy. Users can still
-// search for those by name via the autocomplete in MapView.
-const WORK_SPOT_TYPES = ["cafe", "coffee_shop", "bakery", "tea_house"];
+// Canonical work-friendly types for *recommendations*. Full restaurants
+// / fast-food are excluded — too noisy. Delis + sandwich shops are
+// included to catch Loveski-style spots that are actually workable.
+const WORK_SPOT_TYPES = [
+  "cafe",
+  "coffee_shop",
+  "bakery",
+  "tea_house",
+  "deli",
+  "sandwich_shop",
+];
 
 /**
  * Google Places Nearby Search — work-spot types near a point.

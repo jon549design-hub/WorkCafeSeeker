@@ -40,7 +40,8 @@
       "Bash(git commit -m 'Real-mode dashboard: '\\\\''Try something new'\\\\'' + '\\\\''Nearby open right now'\\\\'' carousel *)",
       "Bash(git commit -m 'Fix invalid Google Places primary types + 5-cap for autocomplete *)",
       "Bash(git commit -m 'Narrow nearby-search recs to actual work spots *)",
-      "Bash(git commit -m 'Real-mode polish: VisitForm + SavedList + Me page *)"
+      "Bash(git commit -m 'Real-mode polish: VisitForm + SavedList + Me page *)",
+      "Bash(git commit -m 'Color refresh + Leaflet map in real mode + photo filter *)"
     ]
   }
 }

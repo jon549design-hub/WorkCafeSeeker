@@ -48,15 +48,15 @@ export default function CafeTile({
         />
         <div className="absolute top-3 left-3">
           {isRegular ? (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-amber-warm text-white font-semibold">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-regular text-white font-semibold">
               ★ Regular
             </span>
           ) : isVisited ? (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-sage text-white font-semibold">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-visited text-white font-semibold">
               Visited
             </span>
           ) : (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-rose text-white font-semibold">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-new text-white font-semibold">
               New
             </span>
           )}

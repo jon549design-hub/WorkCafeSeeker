@@ -145,7 +145,7 @@ export default function DemoSavedList() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold truncate">{r.name}</span>
                           {isRegular && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-soft text-amber-warm font-semibold shrink-0">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-regular-soft text-regular font-semibold shrink-0">
                               ★ Regular
                             </span>
                           )}

@@ -98,25 +98,29 @@ export default function RealDashboard() {
   );
 
   // Try something new = a single closest open nearby cafe that the user
-  // hasn't visited and isn't their regular.
+  // hasn't visited and isn't their regular. Must have a photo because the
+  // card is a big hero — a placeholder looks broken at that size.
   const newToTry = useMemo(() => {
     return nearby.find(
       (p) =>
         p.isOpen !== false &&
         !visitedIds.has(p.id) &&
-        p.id !== regularId,
+        p.id !== regularId &&
+        p.photo !== null,
     );
   }, [nearby, visitedIds, regularId]);
 
   // Nearby carousel = open spots near you, excluding the regular + the
-  // try-something-new pick (so they're not duplicated).
+  // try-something-new pick (so they're not duplicated). Photo required so
+  // the carousel doesn't have visually empty tiles mixed in.
   const nearbyCarousel = useMemo(() => {
     return nearby
       .filter(
         (p) =>
           p.isOpen !== false &&
           p.id !== regularId &&
-          p.id !== newToTry?.id,
+          p.id !== newToTry?.id &&
+          p.photo !== null,
       )
       .slice(0, 6);
   }, [nearby, regularId, newToTry]);
@@ -249,7 +253,7 @@ function CafeRowCard({
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold truncate">{cafe.name}</span>
             {isRegular && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-soft text-amber-warm font-semibold shrink-0">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-regular-soft text-regular font-semibold shrink-0">
                 ★ Regular
               </span>
             )}
@@ -291,7 +295,7 @@ function NearbyHeroCard({
             className="w-full h-full object-cover"
           />
           <div className="absolute top-3 left-3">
-            <span className="text-[10px] px-2 py-1 rounded-full bg-rose text-white font-semibold">
+            <span className="text-[10px] px-2 py-1 rounded-full bg-new text-white font-semibold">
               New
             </span>
           </div>
@@ -350,7 +354,7 @@ function NearbyTile({
         <div className="absolute top-3 left-3">
           <span
             className={`text-[10px] px-2 py-1 rounded-full font-semibold ${
-              isVisited ? "bg-sage text-white" : "bg-rose text-white"
+              isVisited ? "bg-visited text-white" : "bg-new text-white"
             }`}
           >
             {isVisited ? "Visited" : "New"}
