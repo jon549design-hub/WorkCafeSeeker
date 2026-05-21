@@ -11,6 +11,7 @@ import {
   configureMaps,
   importLibrary,
 } from "@/lib/google/loader";
+import { fetchNearbyPlaces } from "@/lib/google/places";
 import {
   getCurrentLocation,
   haversineKm,
@@ -25,13 +26,16 @@ import MapStylePicker from "./MapStylePicker";
 const SF_CENTER: [number, number] = [37.7749, -122.4194];
 
 type CafePin = {
-  id: string;
   google_place_id: string;
   name: string;
   lat: number;
   lng: number;
   has_wifi: boolean | null;
   has_outlets: boolean | null;
+  // true if this pin came from Google Places nearby search rather than
+  // the user's own visits. Renders as a "new" (green) marker.
+  isNew?: boolean;
+  isOpen?: boolean | null;
 };
 
 export default function MapView() {
@@ -56,7 +60,7 @@ export default function MapView() {
       const { data, error } = await supabase
         .from("visits")
         .select(
-          "has_wifi, has_outlets, cafe:cafes(id, google_place_id, name, lat, lng)",
+          "has_wifi, has_outlets, cafe:cafes(google_place_id, name, lat, lng)",
         )
         .order("visited_at", { ascending: false })
         .limit(500);
@@ -65,12 +69,11 @@ export default function MapView() {
         console.warn("Could not load visited cafes:", error.message);
         return;
       }
-      const byCafe = new Map<string, CafePin>();
+      const byPlaceId = new Map<string, CafePin>();
       for (const v of (data ?? []) as unknown as {
         has_wifi: boolean | null;
         has_outlets: boolean | null;
         cafe: {
-          id: string;
           google_place_id: string;
           name: string;
           lat: number;
@@ -79,9 +82,8 @@ export default function MapView() {
       }[]) {
         const c = v.cafe;
         if (!c) continue;
-        if (!byCafe.has(c.id)) {
-          byCafe.set(c.id, {
-            id: c.id,
+        if (!byPlaceId.has(c.google_place_id)) {
+          byPlaceId.set(c.google_place_id, {
             google_place_id: c.google_place_id,
             name: c.name,
             lat: c.lat,
@@ -92,20 +94,15 @@ export default function MapView() {
         }
       }
 
-      // Also pull the user's regular cafe (even without a logged visit)
-      // so it appears as a blue ★ pin on the map.
-      if (
-        currentRegular &&
-        ![...byCafe.values()].some((c) => c.google_place_id === currentRegular)
-      ) {
+      // Also pull the user's regular cafe (even without a logged visit).
+      if (currentRegular && !byPlaceId.has(currentRegular)) {
         const { data: regularRow } = await supabase
           .from("cafes")
-          .select("id, google_place_id, name, lat, lng")
+          .select("google_place_id, name, lat, lng")
           .eq("google_place_id", currentRegular)
           .maybeSingle();
         if (regularRow) {
-          byCafe.set(regularRow.id as string, {
-            id: regularRow.id as string,
+          byPlaceId.set(regularRow.google_place_id as string, {
             google_place_id: regularRow.google_place_id as string,
             name: regularRow.name as string,
             lat: regularRow.lat as number,
@@ -116,13 +113,41 @@ export default function MapView() {
         }
       }
 
-      setPins([...byCafe.values()]);
+      setPins([...byPlaceId.values()]);
     })();
 
     setStyleIdState(getMapStyleId());
     setRegularId(getRegular());
-    getCurrentLocation().then((loc) => {
-      if (!cancelled) setUserLoc(loc);
+    getCurrentLocation().then(async (loc) => {
+      if (cancelled) return;
+      setUserLoc(loc);
+      // Pull nearby work-spot places from Google and render them as
+      // "new" (green) pins so the map isn't empty when the user has
+      // few/no visits.
+      try {
+        const nearby = await fetchNearbyPlaces(loc, 1500, 12);
+        if (cancelled) return;
+        setPins((prev) => {
+          const have = new Set(prev.map((p) => p.google_place_id));
+          const additions: CafePin[] = [];
+          for (const p of nearby) {
+            if (have.has(p.id)) continue;
+            additions.push({
+              google_place_id: p.id,
+              name: p.name,
+              lat: p.lat,
+              lng: p.lng,
+              has_wifi: null,
+              has_outlets: null,
+              isNew: true,
+              isOpen: p.isOpen,
+            });
+          }
+          return [...prev, ...additions];
+        });
+      } catch (e) {
+        console.warn("Could not fetch nearby places for map:", e);
+      }
     });
     const unsub = subscribeRegular(() => setRegularId(getRegular()));
     return () => {
@@ -138,9 +163,14 @@ export default function MapView() {
 
   const filteredPins = useMemo(() => {
     return pins.filter((p) => {
+      // Wifi / outlets filters only apply to confirmed-good visited
+      // cafes. New pins (no user data) are excluded when filtering.
       if (filters.has_wifi && p.has_wifi !== true) return false;
       if (filters.has_outlets && p.has_outlets !== true) return false;
-      // open_now filter would need live hours parsing — out of scope here.
+      // "Open now" only applies to new pins (we have Google's isOpen
+      // for them). Visited cafes don't store hours, so they're always
+      // shown — better than hiding history.
+      if (filters.open_now && p.isNew && p.isOpen === false) return false;
       return true;
     });
   }, [pins, filters]);
@@ -205,10 +235,13 @@ export default function MapView() {
 
       for (const c of cafes) {
         const isRegular = regularId === c.google_place_id;
-        // Regular = blue, Visited = beige. (No "new" pin here — those
-        // would be Google Places nearby, surfaced on the dashboard, not
-        // pre-rendered on this map.)
-        const color = isRegular ? "#5b85b8" : "#b89866";
+        const isNew = !isRegular && c.isNew === true;
+        // Regular = blue, New = green, Visited = beige.
+        const color = isRegular
+          ? "#5b85b8"
+          : isNew
+            ? "#6e9d72"
+            : "#b89866";
         const size = isRegular ? 22 : 18;
         const inner = isRegular
           ? `<div style="
