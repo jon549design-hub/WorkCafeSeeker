@@ -72,3 +72,22 @@ body {
   box-shadow: 0 8px 24px rgba(26, 26, 26, 0.08);
   font-family: var(--font-sans);
 }
+
+/* Wrap Google's autocomplete in a cream pill that matches the demo
+   search bar. The element itself is a Web Component with shadow DOM,
+   so we style the host. */
+gmp-place-autocomplete {
+  display: block;
+  border-radius: 9999px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(26, 26, 26, 0.06);
+  overflow: hidden;
+  color-scheme: light;
+}
+gmp-place-autocomplete::part(input) {
+  background: transparent;
+  border: none;
+  padding: 0 1rem;
+  height: 44px;
+}

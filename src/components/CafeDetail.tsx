@@ -108,14 +108,36 @@ export default function CafeDetail({ placeId }: Props) {
     return out;
   }, [visits]);
 
-  function toggleRegular() {
+  async function toggleRegular() {
     if (!place) return;
     if (isRegular) {
       setRegular(null);
       setIsRegular(false);
-    } else {
-      setRegular(placeId);
-      setIsRegular(true);
+      return;
+    }
+    setRegular(placeId);
+    setIsRegular(true);
+    // Also persist the cafe to Supabase so it shows up on the home
+    // dashboard + map even without a logged visit. Without this step,
+    // the regular only lives in localStorage and the user's database
+    // has no record of it.
+    try {
+      const supabase = createSupabaseBrowserClient();
+      await supabase.from("cafes").upsert(
+        {
+          google_place_id: placeId,
+          name: place.name,
+          address: place.address,
+          lat: place.lat,
+          lng: place.lng,
+          google_rating: place.rating,
+          hours_json: { weekday_text: place.weekdayText },
+          last_synced_at: new Date().toISOString(),
+        },
+        { onConflict: "google_place_id" },
+      );
+    } catch (e) {
+      console.warn("Couldn't upsert cafe on regular toggle:", e);
     }
   }
 

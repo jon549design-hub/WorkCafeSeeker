@@ -42,6 +42,10 @@ export default function RealDashboard() {
     (async () => {
       await ensureSession();
       const supabase = createSupabaseBrowserClient();
+      const currentRegular = getRegular();
+      setRegularId(currentRegular);
+
+      // Fetch all the user's visited cafes (deduped).
       const { data, error } = await supabase
         .from("visits")
         .select(
@@ -50,9 +54,9 @@ export default function RealDashboard() {
         .order("visited_at", { ascending: false })
         .limit(500);
       if (cancelled) return;
+      const list: CafeRow[] = [];
       if (!error && data) {
         const seen = new Set<string>();
-        const list: CafeRow[] = [];
         for (const v of data as unknown as VisitRow[]) {
           const c = v.cafe;
           if (c && !seen.has(c.id)) {
@@ -60,10 +64,28 @@ export default function RealDashboard() {
             list.push(c);
           }
         }
-        setCafes(list);
       }
+
+      // If the user's marked-regular cafe isn't already in the visits
+      // list (they marked it as a regular without logging a visit yet),
+      // fetch it directly from the cafes table so it still shows up on
+      // home as "Your regular".
+      if (
+        currentRegular &&
+        !list.some((c) => c.google_place_id === currentRegular)
+      ) {
+        const { data: regularRow } = await supabase
+          .from("cafes")
+          .select("id, google_place_id, name, address, lat, lng, google_rating")
+          .eq("google_place_id", currentRegular)
+          .maybeSingle();
+        if (!cancelled && regularRow) {
+          list.unshift(regularRow as CafeRow);
+        }
+      }
+
+      if (!cancelled) setCafes(list);
       setLoadingVisits(false);
-      setRegularId(getRegular());
     })();
 
     getCurrentLocation().then(async (loc) => {

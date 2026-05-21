@@ -52,6 +52,7 @@ export default function MapView() {
     (async () => {
       await ensureSession();
       const supabase = createSupabaseBrowserClient();
+      const currentRegular = getRegular();
       const { data, error } = await supabase
         .from("visits")
         .select(
@@ -78,7 +79,6 @@ export default function MapView() {
       }[]) {
         const c = v.cafe;
         if (!c) continue;
-        // Newest visit wins for the boolean signals.
         if (!byCafe.has(c.id)) {
           byCafe.set(c.id, {
             id: c.id,
@@ -91,6 +91,31 @@ export default function MapView() {
           });
         }
       }
+
+      // Also pull the user's regular cafe (even without a logged visit)
+      // so it appears as a blue ★ pin on the map.
+      if (
+        currentRegular &&
+        ![...byCafe.values()].some((c) => c.google_place_id === currentRegular)
+      ) {
+        const { data: regularRow } = await supabase
+          .from("cafes")
+          .select("id, google_place_id, name, lat, lng")
+          .eq("google_place_id", currentRegular)
+          .maybeSingle();
+        if (regularRow) {
+          byCafe.set(regularRow.id as string, {
+            id: regularRow.id as string,
+            google_place_id: regularRow.google_place_id as string,
+            name: regularRow.name as string,
+            lat: regularRow.lat as number,
+            lng: regularRow.lng as number,
+            has_wifi: null,
+            has_outlets: null,
+          });
+        }
+      }
+
       setPins([...byCafe.values()]);
     })();
 
@@ -276,7 +301,20 @@ export default function MapView() {
             "meal_takeaway",
           ],
         } as unknown as Record<string, unknown>);
-        autocompleteEl.style.width = "100%";
+        // Style the Google element to match the cream / pill aesthetic.
+        // PlaceAutocompleteElement exposes a handful of CSS custom props
+        // that pass through its shadow DOM.
+        autocompleteEl.style.cssText = `
+          width: 100%;
+          color-scheme: light;
+          --gmpx-color-surface: #ffffff;
+          --gmpx-color-on-surface: #1a1a1a;
+          --gmpx-color-on-surface-variant: #6b6b6b;
+          --gmpx-color-primary: #1a1a1a;
+          --gmpx-color-outline: #e3dccc;
+          --gmpx-font-family-base: var(--font-sans);
+          --gmpx-font-size-base: 14px;
+        `;
         searchContainerRef.current.innerHTML = "";
         searchContainerRef.current.appendChild(autocompleteEl);
 
