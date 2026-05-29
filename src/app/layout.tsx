@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, PT_Serif } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import { Analytics } from "@vercel/analytics/next";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body className="min-h-[100dvh] flex flex-col bg-background text-foreground">
         <main className="flex-1 flex flex-col pb-16">{children}</main>
         <BottomNav />
+        <Analytics />
       </body>
     </html>
   );
